@@ -1,0 +1,64 @@
+.container{
+    padding-top: 40px;
+}
+
+
+.control__panel{
+    background-color: #ccc;
+    height: 300px;
+}
+
+
+
+.cardContainer { 
+    height: 150px;
+    position: relative;
+    padding: 0;
+    -webkit-perspective: 800px;
+}
+
+.card {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    -webkit-transform-style: preserve-3d;
+    transition: transform 1s;
+    -webkit-transition: -webkit-transform 1s;
+    -webkit-transform-origin: center center;
+}
+
+.front, .back {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    border-radius: 10px; 
+    border: 1px solid white;
+    -webkit-backface-visibility: hidden;
+}
+
+.front {
+    background: #25313c;
+}
+.back {
+    background: #fbfafa;
+    -webkit-transform: rotateY( 180deg );
+}
+
+.card__title{
+    font-size: 1.1em;
+    text-align:center;
+}
+
+.card__img{
+  width: 50%;
+  overflow: auto;
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
+
+.flipped {
+    -webkit-transform: rotateY( 180deg );
+}
+
