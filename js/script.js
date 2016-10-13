@@ -1,4 +1,5 @@
 //Array to hold deck of cards
+/*
 var arr = [];
 var start_btn = document.getElementById("start_game");
 var cardLink = document.getElementsByClassName('card');
@@ -13,7 +14,9 @@ var config = {
         return this.noOfCards % 2 == 0 ? this.noOfCards / 2 : console.log("Error: uneven number used");
     },
     arr: []
-}
+};
+
+
 
 //Function to use as template for card objects created
 function Card(name, image) {
@@ -24,7 +27,7 @@ function Card(name, image) {
 //Function to create cards and push into array - 'arr'
 function createCards(deck, noOfPairs){
     var newCard;
-    for ( var i = 0; i < noOfPairs; i++){
+    for ( var i = 0; i < noOfPairs; i++ ){
         newCard = new Card(config.cardContent[i],config.cardContent[i]+config.imageFormat);
         deck.push(newCard);
         deck.push(newCard);
@@ -79,7 +82,7 @@ var startGame = function(array, pairs){
         dealCards(array);
         applyLinks();
     //enable cards and timers/counters
-}
+};
 
 
 //compareCards(config.arr[0].name, config.arr[1].name);
@@ -109,5 +112,42 @@ function addLink(i){
     else{
         cardLink[i].className = "card";
     }
-};
+};*/
+
+
+(function(){
+
+    var startBtn = document.getElementById('js-game_selector'),
+        gridContainer = document.getElementById('grid_container'),
+
+        config = {
+            level: {
+                "easy": 9,
+                "medium": 18,
+                "difficult": 36
+            }
+        };
+
+    startBtn.addEventListener('click', initGame, false);
+
+    function initGame(event){
+        event.preventDefault();
+
+        if( event.target.id == "js-start_game"){
+            console.log(startBtn.elements["js-game_level"].value);
+        }
+    }
+
+
+
+
+    //Function to use as template for card objects created
+    function Card(name, image) {
+        this.name = name;
+        this.image = config.imagePath+image;
+    }
+
+
+
+})();
 
