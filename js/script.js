@@ -121,11 +121,29 @@ function addLink(i){
         gridContainer = document.getElementById('grid_container'),
 
         config = {
-            level: {
-                "easy": 9,
-                "medium": 18,
-                "difficult": 36
-            }
+
+            levels: {
+                "easy": {
+                    "total": 8,
+                    "time": 3
+                },
+                "medium": {
+                    "total": 16,
+                    "time": 5
+                },
+                "difficult": {
+                    "total": 32,
+                    "time": 6
+
+                }
+            },
+            noOfPairs: {
+                "total": null,
+                "left": null
+            },
+            timer: 0,
+            cardDesign: ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen"],
+            deck: []
         };
 
     startBtn.addEventListener('click', initGame, false);
@@ -134,18 +152,56 @@ function addLink(i){
         event.preventDefault();
 
         if( event.target.id == "js-start_game"){
-            console.log(startBtn.elements["js-game_level"].value);
+
+            var selectedLevel = startBtn.elements["js-game_level"].value;
+
+            config.noOfPairs.total = ( config.levels[selectedLevel].total ) / 2;
+
+            createCards( config.deck, config.noOfPairs.total);
+
+
+            startGame( config.levels[selectedLevel].time );
+
         }
     }
 
 
-
-
     //Function to use as template for card objects created
-    function Card(name, image) {
+    function Card(name, design, id) {
         this.name = name;
-        this.image = config.imagePath+image;
+        this.design = design;
+        this.uniqueId = id;
     }
+
+
+
+
+    function createCards(deck, noOfPairs){
+        var newCard,
+            i;
+
+        for ( i = 0; i < noOfPairs; i++ ){
+            newCard = new Card( config.cardDesign[i], config.cardDesign[i], config.cardDesign[i] );
+            deck.push(newCard);
+            deck.push(newCard);
+        }
+    }
+
+
+    function startGame(selectedTime){
+
+        //Disable start button
+        //add Reset / restart button
+        //Add timer, scoring etc.
+
+
+        config.timer = selectedTime;
+
+        console.log(config.deck);
+    }
+
+
+    function endGame(){}
 
 
 
