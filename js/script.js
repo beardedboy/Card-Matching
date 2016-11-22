@@ -1,30 +1,16 @@
 (function(){
 
-    var startBtn = document.getElementById('js-game_selector'),
+    var startBtn = document.getElementById('js-start_game'),
         gridContainer = document.getElementById('js-grid_container'),
+        titleScreen = document.getElementById('js-title_screen'),
 
         config = {
-
-            levels: {
-                "easy": {
-                    "total": 8,
-                    "time": 3
-                },
-                "medium": {
-                    "total": 16,
-                    "time": 5
-                },
-                "difficult": {
-                    "total": 32,
-                    "time": 6
-
-                }
-            },
+            currentLevel: 1,
             noOfPairs: {
-                "total": null,
+                "total": 0,
                 "left": null
             },
-            timer: 0,
+            timer: 300,
             cardDesign: ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen"],
             deck: []
         },
@@ -35,14 +21,37 @@
 
     startBtn.addEventListener( 'click', initGame, false );
 
+    function setNoOfPairs(){
+        config.noOfPairs.total = config.currentLevel * 2;
+    }
+
     function initGame(event){
         event.preventDefault();
 
-        if( event.target.id == "js-start_game"){
+            //Removes title screen from view
+            titleScreen.classList.add('title_screen-active');
 
-            var selectedLevel = startBtn.elements["js-game_level"].value;
-            config.noOfPairs.total = config.noOfPairs.left = ( config.levels[selectedLevel].total ) / 2;
+            setNoOfPairs();
 
+            //createCards
+            createCards( config.deck, config.noOfPairs.total );
+            //shuffleDeck
+            shuffleDeck( config.deck );
+            //dealCards
+            dealCards( config.deck, config.noOfPairs.total, gridContainer );
+            //init timer
+
+            //init score
+
+
+
+            //startGame
+
+           // var selectedLevel = startBtn.elements["js-game_level"].value;
+            //config.noOfPairs.total = config.noOfPairs.left = ( config.levels[selectedLevel].total ) / 2;
+
+
+            /*console.log(config.noOfPairs.total);
             createCards( config.deck, config.noOfPairs.total );
             shuffleDeck( config.deck );
             dealCards( config.deck, config.noOfPairs.total, gridContainer );
@@ -50,9 +59,8 @@
             startGame( config.levels[selectedLevel].time );
 
             startBtn.removeEventListener('click', initGame, false);
-            startBtn.addEventListener('click', resetGame, false);
+            startBtn.addEventListener('click', resetGame, false);*/
 
-        }
     }
 
     function resetGame(event){
@@ -61,7 +69,7 @@
     }
 
 
-
+    function initNewLevel(){}
 
 
 
@@ -205,8 +213,8 @@
 
 
             if( config.noOfPairs.left === 0 ){
-                //END GAME
-                console.log("GAME COMPLETE");
+                //END LEVEL
+                console.log("LEVEL COMPLETE");
             } else{
                 gridContainer.removeEventListener( 'click', blocker, true );
             }
