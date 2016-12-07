@@ -1,8 +1,10 @@
 (function(){
 
-    var startBtn = document.getElementById('js-start_game'),
-        gridContainer = document.getElementById('js-grid_container'),
-        titleScreen = document.getElementById('js-title_screen'),
+    var doc = document,
+        startBtn = doc.getElementById('js-start_game'),
+        gridContainer = doc.getElementById('js-grid_container'),
+        titleScreen = doc.getElementById('js-title_screen'),
+        timerContainer = doc.getElementById('js-timer'),
 
         config = {
             currentLevel: 1,
@@ -21,9 +23,6 @@
 
     startBtn.addEventListener( 'click', initGame, false );
 
-    function setNoOfPairs(){
-        config.noOfPairs.total = config.currentLevel * 2;
-    }
 
     function initGame(event){
         event.preventDefault();
@@ -40,7 +39,7 @@
             //dealCards
             dealCards( config.deck, config.noOfPairs.total, gridContainer );
             //init timer
-
+            createTimer();
             //init score
 
 
@@ -80,13 +79,17 @@
     //*****************************************************************************************************************
 
 
+    function setNoOfPairs(){
+        config.noOfPairs.total = config.currentLevel * 2;
+    }
+
+
     //Function to use as template for card objects created
     function Card(name, design, id) {
         this.name = name;
         this.design = design;
         this.id = id;
     }
-
 
 
     //
@@ -120,6 +123,12 @@
         return array;
     }
 
+
+    function clearDeck(){
+        config.deck = [];
+    }
+
+
     //*****************************************************************************************************************
     //
     // Setting up game grid
@@ -132,11 +141,11 @@
         var grid = gridContainer,
             i = 0,
             deckLength = deck.length,
-            fragment = document.createDocumentFragment();
+            fragment = doc.createDocumentFragment();
 
         for ( ; i < deckLength; i++ ){
 
-            var newCard = document.createElement('div');
+            var newCard = doc.createElement('div');
             newCard.dataset.value = deck[i].id;
 
             switch( totalPairs ){
@@ -164,10 +173,68 @@
     }
 
 
-    //Gameplay
+
+    //*****************************************************************************************************************
+    //
+    // Timer Functions
+    //
+    //*****************************************************************************************************************
+
+    function createTimer(){
+        var fragment = document.createDocumentFragment(),
+            timer = setTimer( config.timer );
+
+        //Create minutes
+        var minutes = doc.createElement('span');
+
+        minutes.className = "minutes";
+        minutes.id = "js-minutes";
+        minutes.innerText = timer.minutes;
+
+        //Create divider
+        var divider = doc.createElement('span');
+
+        divider.className = "divider";
+        divider.innerText = ":";
+
+        //Create seconds
+        var seconds =  doc.createElement('span');
+
+        seconds.className = "seconds";
+        seconds.id = "js-seconds";
+        seconds.innerText = timer.seconds < 10 ? "0" + timer.seconds : timer.seconds;
+
+
+
+        fragment.appendChild( minutes );
+        fragment.appendChild( divider );
+        fragment.appendChild( seconds );
+
+        timerContainer.appendChild( fragment );
+
+    }
+
+
+    function setTimer( duration ){
+
+        var seconds =  duration % 60,
+            minutes = ( duration - seconds ) / 60;
+
+        return {
+            seconds: seconds,
+            minutes: minutes
+        }
+    }
 
     function startTimer(){}
     function stopTimer(){}
+
+    function addTime(){}
+
+
+
+
+    //Gameplay
 
 
     function cardSelect( event ){
