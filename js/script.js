@@ -4,7 +4,19 @@
         startBtn = doc.getElementById('js-start_game'),
         gridContainer = doc.getElementById('js-grid_container'),
         titleScreen = doc.getElementById('js-title_screen'),
-        timerContainer = doc.getElementById('js-timer'),
+
+        gameTimer = {
+            timer: null,
+            container: doc.getElementById('js-timer'),
+            totalTime: 82,
+            minuteContainer: null,
+            SecondContainer: null
+        },
+
+        gameScore = {
+            container: doc.getElementById('js-score'),
+            total: 0
+        },
 
         config = {
             currentLevel: 1,
@@ -12,7 +24,6 @@
                 "total": 0,
                 "left": null
             },
-            timer: 300,
             cardDesign: ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen"],
             deck: []
         },
@@ -20,7 +31,6 @@
         currentSelection = [];
 
     //Global Controls
-
     startBtn.addEventListener( 'click', initGame, false );
 
 
@@ -38,28 +48,15 @@
             shuffleDeck( config.deck );
             //dealCards
             dealCards( config.deck, config.noOfPairs.total, gridContainer );
+
+
             //init timer
             createTimer();
-            //init score
 
+            //initScore
+            updateScore();
 
-
-            //startGame
-
-           // var selectedLevel = startBtn.elements["js-game_level"].value;
-            //config.noOfPairs.total = config.noOfPairs.left = ( config.levels[selectedLevel].total ) / 2;
-
-
-            /*console.log(config.noOfPairs.total);
-            createCards( config.deck, config.noOfPairs.total );
-            shuffleDeck( config.deck );
-            dealCards( config.deck, config.noOfPairs.total, gridContainer );
-
-            startGame( config.levels[selectedLevel].time );
-
-            startBtn.removeEventListener('click', initGame, false);
-            startBtn.addEventListener('click', resetGame, false);*/
-
+            gameTimer.timer = startTimer();
     }
 
     function resetGame(event){
@@ -182,14 +179,17 @@
 
     function createTimer(){
         var fragment = document.createDocumentFragment(),
-            timer = setTimer( config.timer );
+            time = setTimer( gameTimer.totalTime );
+
+        gameTimer.currentMinute = time.minutes;
+        gameTimer.currentSecond = time.seconds;
 
         //Create minutes
         var minutes = doc.createElement('span');
 
         minutes.className = "minutes";
         minutes.id = "js-minutes";
-        minutes.innerText = timer.minutes;
+        minutes.innerText = gameTimer.currentMinute;
 
         //Create divider
         var divider = doc.createElement('span');
@@ -198,19 +198,22 @@
         divider.innerText = ":";
 
         //Create seconds
-        var seconds =  doc.createElement('span');
+        var seconds = doc.createElement('span');
 
         seconds.className = "seconds";
         seconds.id = "js-seconds";
-        seconds.innerText = timer.seconds < 10 ? "0" + timer.seconds : timer.seconds;
-
+        seconds.innerText = gameTimer.currentSecond < 10 ? "0" + gameTimer.currentSecond : gameTimer.currentSecond;
 
 
         fragment.appendChild( minutes );
         fragment.appendChild( divider );
         fragment.appendChild( seconds );
 
-        timerContainer.appendChild( fragment );
+        gameTimer.container.appendChild( fragment );
+
+        //Set global variables with newly created elements to be used later
+        gameTimer.minuteContainer = minutes;
+        gameTimer.secondContainer = seconds;
 
     }
 
@@ -224,17 +227,72 @@
             seconds: seconds,
             minutes: minutes
         }
+
     }
 
-    function startTimer(){}
-    function stopTimer(){}
+    function startTimer(){
+        return setInterval( timerCountdown, 1000 );
+    }
 
-    function addTime(){}
+    function timerCountdown() {
+
+        if (gameTimer.totalTime > 0) {
+
+            gameTimer.totalTime--;
+            var newTimes = setTimer(gameTimer.totalTime);
+
+            gameTimer.minuteContainer.innerText = newTimes.minutes;
+            gameTimer.secondContainer.innerText = newTimes.seconds < 10 ? "0" + newTimes.seconds : newTimes.seconds;
+
+        } else {
+            pauseTimer(gameTimer.timer);
+            endGame();
+        }
+
+    }
 
 
+    function pauseTimer(func){
+        return clearInterval(func);
+    }
+
+    function addTime(value){
+        gameTimer.totalTime = gameTimer.totalTime + value;
+    }
+
+    //*****************************************************************************************************************
+    //
+    // Score Functions
+    //
+    //*****************************************************************************************************************
+
+    function updateScore(){
+        gameScore.container.innerText = formatScore(gameScore.total);
+    }
+
+    function formatScore(value){
+       if( value < 10 ) {
+           return '0000' + value
+       } else if( value < 100 ) {
+           return '000' + value
+       } else if( value < 1000 ) {
+           return '00' + value
+       } else if( value < 10000 ) {
+           return '0' + value
+       } else{ return value }
+    }
+
+    function addScore(value){
+        gameScore.total = gameScore.total + value;
+        updateScore();
+    }
 
 
-    //Gameplay
+    //*****************************************************************************************************************
+    //
+    // Gameplay
+    //
+    //*****************************************************************************************************************
 
 
     function cardSelect( event ){
@@ -348,7 +406,7 @@
 
 
 
-    function startGame( selectedTime ){
+    function startGame(){
 
         //Disable start button
         //add Reset / restart button
@@ -361,13 +419,18 @@
             items[i].addEventListener('click', cardSelect, false);
         }
 
-        config.timer = selectedTime;
+
+
+        //start timer
+        gameTimer.timer = startTimer();
 
         //console.log(config.deck);
     }
 
 
-    function endGame(){}
+    function endGame(){
+        console.log('GAME OVER');
+    }
 
 
 
