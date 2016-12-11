@@ -8,9 +8,7 @@
         gameTimer = {
             timer: null,
             container: doc.getElementById('js-timer'),
-            totalTime: 82,
-            minuteContainer: null,
-            SecondContainer: null
+            totalTime: 180
         },
 
         gameScore = {
@@ -46,17 +44,14 @@
             createCards( config.deck, config.noOfPairs.total );
             //shuffleDeck
             shuffleDeck( config.deck );
-            //dealCards
-            dealCards( config.deck, config.noOfPairs.total, gridContainer );
-
 
             //init timer
             createTimer();
 
-            //initScore
-            updateScore();
+            //init Score
+            setScore();
 
-            gameTimer.timer = startTimer();
+            startGame();
     }
 
     function resetGame(event){
@@ -65,7 +60,39 @@
     }
 
 
-    function initNewLevel(){}
+    function initNewLevel(){
+
+        //show intermission screen
+        //Clear cards from screen and from config.noOfPairs
+
+        clearDeck(gridContainer);
+        pauseTimer(gameTimer.timer);
+
+        config.currentLevel++;
+
+        setNoOfPairs();
+        createCards( config.deck, config.noOfPairs.total );
+        shuffleDeck( config.deck );
+
+        startNewLevel();
+
+
+    }
+
+    function startNewLevel(){
+        gameTimer.timer = startTimer();
+        //Deal the cards
+        dealCards( config.deck, config.noOfPairs.total, gridContainer );
+
+
+        var items = document.querySelectorAll(".card");
+
+        for(var i = 0; i < items.length; i++ ) {
+            items[i].addEventListener('click', cardSelect, false);
+        }
+
+        gridContainer.removeEventListener( 'click', blocker, true );
+    }
 
 
 
@@ -77,7 +104,7 @@
 
 
     function setNoOfPairs(){
-        config.noOfPairs.total = config.currentLevel * 2;
+        config.noOfPairs.total = config.noOfPairs.left =  ( ( config.currentLevel * 2 ) + 2 ) / 2;
     }
 
 
@@ -121,16 +148,11 @@
     }
 
 
-    function clearDeck(){
+    function clearDeck( gridContainer ){
         config.deck = [];
+        gridContainer.innerHTML = "";
     }
 
-
-    //*****************************************************************************************************************
-    //
-    // Setting up game grid
-    //
-    //*****************************************************************************************************************
 
     //Function to deal out the cards into the DOM
     function dealCards(deck, totalPairs, gridContainer ){
@@ -145,19 +167,7 @@
             var newCard = doc.createElement('div');
             newCard.dataset.value = deck[i].id;
 
-            switch( totalPairs ){
-                case 4:
-                    newCard.className = "card card_width-1_4";
-                    break;
-                case 8:
-                    newCard.className = "card card_width-1_4";
-                    break;
-                case 16:
-                    newCard.className = "card card_width-1_8";
-                    break;
-                default:
-                    newCard.className = "card";
-            }
+            newCard.className = "card";
 
             newCard.innerHTML += '<div class="front"></div>';
             newCard.innerHTML += '<div class="back '+deck[i].name+'"><h1 class="card__title">'+deck[i].name+'</h1></div>';
@@ -260,14 +270,16 @@
         gameTimer.totalTime = gameTimer.totalTime + value;
     }
 
+
     //*****************************************************************************************************************
     //
     // Score Functions
     //
     //*****************************************************************************************************************
 
-    function updateScore(){
-        gameScore.container.innerText = formatScore(gameScore.total);
+
+    function setScore(){
+        gameScore.container.innerText = formatScore( gameScore.total );
     }
 
     function formatScore(value){
@@ -284,8 +296,15 @@
 
     function addScore(value){
         gameScore.total = gameScore.total + value;
-        updateScore();
+        setScore();
     }
+
+    function removeScore(value){
+        gameScore.total = gameScore.total - value;
+        setScore();
+    }
+
+
 
 
     //*****************************************************************************************************************
@@ -336,9 +355,13 @@
             selection[0].removeEventListener('click', cardSelect, false);
             selection[1].removeEventListener('click', cardSelect, false);
 
+            addScore(10);
+            addTime(10);
+
 
             if( config.noOfPairs.left === 0 ){
                 //END LEVEL
+                initNewLevel();
                 console.log("LEVEL COMPLETE");
             } else{
                 gridContainer.removeEventListener( 'click', blocker, true );
@@ -346,58 +369,13 @@
 
         } else{
             currentSelection = [];
-            gridContainer.removeEventListener( 'click', blocker, true );
             selection[0].classList.remove( "card-selected" );
             selection[1].classList.remove( "card-selected" );
+            gridContainer.removeEventListener( 'click', blocker, true );
         }
 
-
-
-        //flip card
-        //toggleClass(event.currentTarget, "card-selected");
-
-        //currentSelection.push(event.currentTarget);
-
-        //console.log(currentSelection);
-
-        /*  Add selected card to array for comparison
-
-            Check if two entries:
-                   Yes: Put temporary eventlistener at top level which blocks others firing below.
-                        Check if two card values are equal
-                        if yes:
-                            mark as completed with class / remove event listeners from those 2 cards,
-                            reduce from pairs left,
-                            check if any pairs left:
-                                 no:
-                                    go to complete screen,
-                                    display congrats screen with finishing time(?)
-                                    display play again button ( same as reset button functionality )
-                                    remove all event listeners from cards
-                               yes:
-                                    clear array of current selection
-                                    remove the temp event listener at top level
-
-                        if No:
-                           remove the selected classes from both cards
-                           remove the temp event listener at top level
-                           clear array of current selection
-
-                  No:
-
-
-        */
-
-
-
-        //if(event.target.classList[0] === 'card'){
-           // console.log( event.target );
-           //console.log( event.target );
-            //console.log( event.currentTarget.dataset.value );
-           // event.stopPropagation();
-        //}
-
     }
+
 
     function blocker(event){
         event.preventDefault();
@@ -408,9 +386,8 @@
 
     function startGame(){
 
-        //Disable start button
-        //add Reset / restart button
-        //Add timer, scoring etc.
+        //Deal the cards
+        dealCards( config.deck, config.noOfPairs.total, gridContainer );
 
 
         var items = document.querySelectorAll(".card");
@@ -419,12 +396,9 @@
             items[i].addEventListener('click', cardSelect, false);
         }
 
-
-
         //start timer
         gameTimer.timer = startTimer();
 
-        //console.log(config.deck);
     }
 
 
@@ -435,122 +409,4 @@
 
 
 })();
-
-
-
-//Array to hold deck of cards
-/*
- var arr = [];
- var start_btn = document.getElementById("start_game");
- var cardLink = document.getElementsByClassName('card');
-
- //Global object for settings
- var config = {
- noOfCards: 18,
- cardContent: ["Drama", "Art", "Business", "Catering", "ICT", "Maths", "Science", "German", "Product Design"],
- imagePath: "img/",
- imageFormat: ".png",
- noOfPairs: function() {
- return this.noOfCards % 2 == 0 ? this.noOfCards / 2 : console.log("Error: uneven number used");
- },
- arr: []
- };
-
-
-
- //Function to use as template for card objects created
- function Card(name, image) {
- this.name = name;
- this.image = config.imagePath+image;
- }
-
- //Function to create cards and push into array - 'arr'
- function createCards(deck, noOfPairs){
- var newCard;
- for ( var i = 0; i < noOfPairs; i++ ){
- newCard = new Card(config.cardContent[i],config.cardContent[i]+config.imageFormat);
- deck.push(newCard);
- deck.push(newCard);
- }
- }
-
- //Function to shuffle the deck
- function shuffleDeck(set){ //v1.0
- for(var j, x, i = set.length; i; j = Math.floor(Math.random() * i), x = set[--i], set[i] = set[j], set[j] = x);
- return set;
- };
-
-
- //Function to compare two chosen cards
- function compareCards(firstCard, secondCard){
- return firstCard === secondCard ? true : false;
- };
-
- function formatCards(card){
- //need to remove last two characters from string to get matching id names
-
- };
-
-
- //Function to deal out the cards into the DOM
- function dealCards(deck){
-
- var mod = document.getElementById("firstrow"), fragment = document.createDocumentFragment();
-
- for (var i = 0; i < deck.length; i++){
- mod = document.getElementById("firstrow");
-
- var contain = document.createElement('section');
- contain.className = "col-md-2 cardContainer";
- contain.innerHTML = '<div class="card"><div class="front"></div><div class="back"><h1 class="card__title">'+config.arr[i].name+'</h1><img class="card__img" src="img/'+config.arr[i].name+config.imageFormat+'"/></div></div>';
-
- fragment.appendChild(contain);
- }
-
- mod.appendChild(fragment);
- }
-
-
- function resetGame(){
- //empty array
- //reset counters and timers
- }
-
- var startGame = function(array, pairs){
- createCards(array, pairs);
- shuffleDeck(array);
- dealCards(array);
- applyLinks();
- //enable cards and timers/counters
- };
-
-
- //compareCards(config.arr[0].name, config.arr[1].name);
-
-
- //console.log(config.arr);
-
- //start_btn.attachEvent('onclick', startGame);
- start_btn.addEventListener('click', function() {startGame(config.arr, config.noOfPairs());} , false);
-
-
-
- function applyLinks(){
- //var cardLink = document.getElementsByClassName('card');
- for(var i = 0; i < cardLink.length; i++){
- (function(i) {
- cardLink[i].addEventListener('click', function() {addLink(i);}, false);
- }(i));
- }
- }
-
- //function to add/remove the flipped class as required
- function addLink(i){
- if(!cardLink[i].classList.contains("flipped")){
- cardLink[i].className += " flipped";
- }
- else{
- cardLink[i].className = "card";
- }
- };*/
 
