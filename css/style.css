@@ -1,14 +1,9 @@
 .container{
     padding-top: 40px;
+    position: relative;
+    z-index: 1;
+    background-color: white;
 }
-
-
-.control__panel{
-    background-color: #ccc;
-    height: 300px;
-}
-
-
 
 .cardContainer { 
     height: 150px;
@@ -69,17 +64,47 @@
 
 .title_screen{
     position: fixed;
-    z-index: 5;
+    z-index: 99999;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #31b0d5;
+    background-color: rgba(36,82,105,.2);
 }
 
-.title_screen-active{
+.title_screen-hidden{
+    z-index: -99999;
+}
+
+
+.welcome_screen{
+    background-color: #31b0d5;
+    transition: transform 2s;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+.welcome_screen-hidden{
     transform: translateY(-100%);
 }
+
+.ready_screen, .level_up_screen{
+    color: white;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+
+.level_up_screen{}
+
+
+
 
 .info_bar, .grid_container{
     display: block;

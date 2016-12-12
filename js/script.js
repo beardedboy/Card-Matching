@@ -8,7 +8,9 @@
         gameTimer = {
             timer: null,
             container: doc.getElementById('js-timer'),
-            totalTime: 180
+            totalTime: 60,
+            minuteContainer: undefined,
+            secondContainer: undefined
         },
 
         gameScore = {
@@ -35,23 +37,21 @@
     function initGame(event){
         event.preventDefault();
 
-            //Removes title screen from view
-            titleScreen.classList.add('title_screen-active');
+        //Setting up deck of cards
+        setNoOfPairs();
+        createCards( config.deck, config.noOfPairs.total );
+        shuffleDeck( config.deck );
 
-            setNoOfPairs();
+        //initialise timer and score
+        createTimer();
+        setScore();
 
-            //createCards
-            createCards( config.deck, config.noOfPairs.total );
-            //shuffleDeck
-            shuffleDeck( config.deck );
+        //Deal the cards
+        dealCards( config.deck, config.noOfPairs.total, gridContainer );
 
-            //init timer
-            createTimer();
+        //Removes title screen from view
+        clearWelcomeScreen();
 
-            //init Score
-            setScore();
-
-            startGame();
     }
 
     function resetGame(event){
@@ -65,8 +65,8 @@
         //show intermission screen
         //Clear cards from screen and from config.noOfPairs
 
-        clearDeck(gridContainer);
-        pauseTimer(gameTimer.timer);
+        clearDeck( gridContainer );
+        pauseTimer( gameTimer.timer );
 
         config.currentLevel++;
 
@@ -74,15 +74,14 @@
         createCards( config.deck, config.noOfPairs.total );
         shuffleDeck( config.deck );
 
-        startNewLevel();
+        showLevelUpScreen();
 
+        //Deal the cards
+        dealCards( config.deck, config.noOfPairs.total, gridContainer );
 
     }
 
     function startNewLevel(){
-        gameTimer.timer = startTimer();
-        //Deal the cards
-        dealCards( config.deck, config.noOfPairs.total, gridContainer );
 
 
         var items = document.querySelectorAll(".card");
@@ -92,8 +91,119 @@
         }
 
         gridContainer.removeEventListener( 'click', blocker, true );
+
+        gameTimer.timer = startTimer();
     }
 
+
+    //*****************************************************************************************************************
+    //
+    // Level screens
+    //
+    //*****************************************************************************************************************
+
+    function clearWelcomeScreen(){
+        var welcomeScreen = doc.getElementById("js-welcome_screen");
+        //animate welcome screen going
+        welcomeScreen.classList.add('welcome_screen-hidden');
+        //clearScreen();
+        setTimeout(function(){
+            showReadyScreen();
+            titleScreen.removeChild(welcomeScreen);
+        }, 2000);
+    }
+
+    function showReadyScreen(){
+
+        //Add ready screen
+        var fragment = doc.createDocumentFragment(),
+            ready = doc.createElement('div'),
+            count = 3;
+
+        ready.className = "ready_screen";
+        ready.id = "js-ready_screen";
+        fragment.appendChild( ready );
+        titleScreen.appendChild( fragment );
+
+        var readyScreen = doc.getElementById("js-ready_screen");
+
+        setTimeout(function() {
+            readyScreen.innerHTML = count;
+            count--;
+            setTimeout(function() {
+                readyScreen.innerHTML = count;
+                count--;
+                setTimeout(function() {
+                    readyScreen.innerHTML = count;
+                    count--;
+                    setTimeout(function() {
+                        readyScreen.innerHTML = 'Go';
+                    }, 1000);
+                }, 1000);
+            }, 1000);
+        }, 1000);
+
+
+        setTimeout(function(){
+            //Start the game!
+            clearScreen();
+            startGame();
+        }, 5000);
+    }
+
+    function showLevelUpScreen(){
+        showScreen();
+
+        var fragment = doc.createDocumentFragment(),
+            levelUp = doc.createElement('div');
+
+        levelUp.className = "level_up_screen";
+        levelUp.id = "js-levelup_screen";
+        levelUp.innerHTML = "Level Up!";
+        fragment.appendChild( levelUp );
+        titleScreen.appendChild( fragment );
+
+        setTimeout(function(){
+            //Start the game!
+            clearScreen();
+            hideScreen();
+            startNewLevel();
+        }, 3000);
+
+    }
+
+
+    function showGameOverScreen(){
+        showScreen();
+
+        var fragment = doc.createDocumentFragment(),
+            gameOver = doc.createElement('div');
+
+        gameOver.className = "game_over_screen";
+        gameOver.id = "js-game_over_screen";
+
+        gameOver.innerHTML = "Game Over";
+
+        gameOver.innerHTML += "You made it to level " + config.currentLevel;
+        gameOver.innerHTML += "With a score of " + gameScore.total;
+
+
+        fragment.appendChild( gameOver );
+        titleScreen.appendChild( fragment );
+
+    }
+
+    function clearScreen(){
+        titleScreen.innerHTML = "";
+    }
+
+    function hideScreen(){
+        titleScreen.classList.add('title_screen-hidden');
+    }
+
+    function showScreen(){
+        titleScreen.classList.remove('title_screen-hidden');
+    }
 
 
     //*****************************************************************************************************************
@@ -172,6 +282,8 @@
             newCard.innerHTML += '<div class="front"></div>';
             newCard.innerHTML += '<div class="back '+deck[i].name+'"><h1 class="card__title">'+deck[i].name+'</h1></div>';
 
+            newCard.addEventListener('click', cardSelect, false);
+
             fragment.appendChild(newCard);
 
         } //End for loop
@@ -188,7 +300,7 @@
     //*****************************************************************************************************************
 
     function createTimer(){
-        var fragment = document.createDocumentFragment(),
+        var fragment = doc.createDocumentFragment(),
             time = setTimer( gameTimer.totalTime );
 
         gameTimer.currentMinute = time.minutes;
@@ -386,16 +498,7 @@
 
     function startGame(){
 
-        //Deal the cards
-        dealCards( config.deck, config.noOfPairs.total, gridContainer );
-
-
-        var items = document.querySelectorAll(".card");
-
-        for(var i = 0; i < items.length; i++ ) {
-            items[i].addEventListener('click', cardSelect, false);
-        }
-
+        hideScreen();
         //start timer
         gameTimer.timer = startTimer();
 
@@ -403,7 +506,9 @@
 
 
     function endGame(){
-        console.log('GAME OVER');
+        //Remove event listener for cards
+        gridContainer.addEventListener( 'click', blocker, true );
+        showGameOverScreen();
     }
 
 
