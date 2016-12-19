@@ -1,3 +1,5 @@
+"use strict";
+
 (function(){
 
     var doc = document,
@@ -26,9 +28,9 @@
             },
             cardDesign: ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen"],
             deck: []
-        },
+        };
 
-        currentSelection = [];
+    var currentSelection = [];
 
     //Global Controls
     startBtn.addEventListener( 'click', initGame, false );
@@ -361,7 +363,7 @@
         if (gameTimer.totalTime > 0) {
 
             gameTimer.totalTime--;
-            var newTimes = setTimer(gameTimer.totalTime);
+            var newTimes = setTimer( gameTimer.totalTime );
 
             gameTimer.minuteContainer.innerText = newTimes.minutes;
             gameTimer.secondContainer.innerText = newTimes.seconds < 10 ? "0" + newTimes.seconds : newTimes.seconds;
