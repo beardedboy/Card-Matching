@@ -87,7 +87,7 @@
     left: 0;
 }
 
-.welcome_screen-hidden{
+.screen-hidden{
     transform: translateY(-100%);
 }
 

@@ -1,8 +1,7 @@
 "use strict";
 
-(function(){
-
-    var doc = document,
+(() => {
+    const doc = document,
         startBtn = doc.getElementById('js-start_game'),
         gridContainer = doc.getElementById('js-grid_container'),
         titleScreen = doc.getElementById('js-title_screen'),
@@ -10,7 +9,7 @@
         gameTimer = {
             timer: null,
             container: doc.getElementById('js-timer'),
-            totalTime: 60,
+            totalTime: 10,
             minuteContainer: undefined,
             secondContainer: undefined
         },
@@ -30,13 +29,10 @@
             deck: []
         };
 
-    var currentSelection = [];
-
-    //Global Controls
-    startBtn.addEventListener( 'click', initGame, false );
+    let currentSelection = [];
 
 
-    function initGame(event){
+    let initGame = event => {
         event.preventDefault();
 
         //Setting up deck of cards
@@ -52,13 +48,16 @@
         dealCards( config.deck, config.noOfPairs.total, gridContainer );
 
         //Removes title screen from view
-        clearWelcomeScreen();
+        screenTransition( showReadyScreen, 'screen-hidden', 2000);
+    };
 
-    }
+
 
     function resetGame(event){
         event.preventDefault();
         console.log('reset');
+        initGame(event);
+
     }
 
 
@@ -85,10 +84,11 @@
 
     function startNewLevel(){
 
+        var items = document.querySelectorAll(".card"),
+            len = items.length,
+            i = 0;
 
-        var items = document.querySelectorAll(".card");
-
-        for(var i = 0; i < items.length; i++ ) {
+        for( i; i < len; i++ ) {
             items[i].addEventListener('click', cardSelect, false);
         }
 
@@ -104,30 +104,35 @@
     //
     //*****************************************************************************************************************
 
-    function clearWelcomeScreen(){
-        var welcomeScreen = doc.getElementById("js-welcome_screen");
+
+
+    function screenTransition( nextScreen, animateElement = undefined, timeDelay = 0 ){
+        var screen = titleScreen.firstElementChild;
+
         //animate welcome screen going
-        welcomeScreen.classList.add('welcome_screen-hidden');
-        //clearScreen();
+        if( animateElement ) {
+            screen.classList.add(animateElement);
+        }
+
+
         setTimeout(function(){
-            showReadyScreen();
-            titleScreen.removeChild(welcomeScreen);
-        }, 2000);
+            titleScreen.removeChild(screen);
+            nextScreen();
+        }, timeDelay );
+
     }
+
 
     function showReadyScreen(){
 
-        //Add ready screen
         var fragment = doc.createDocumentFragment(),
-            ready = doc.createElement('div'),
             count = 3;
 
-        ready.className = "ready_screen";
-        ready.id = "js-ready_screen";
-        fragment.appendChild( ready );
+        fragment.appendChild( createNewElement( doc, undefined , 'js-ready_screen', undefined, 'ready_screen' ) );
         titleScreen.appendChild( fragment );
 
-        var readyScreen = doc.getElementById("js-ready_screen");
+        var screen = titleScreen.firstElementChild,
+            readyScreen = doc.getElementById("js-ready_screen");
 
         setTimeout(function() {
             readyScreen.innerHTML = count;
@@ -145,24 +150,17 @@
             }, 1000);
         }, 1000);
 
+        screenTransition(startGame, undefined, 5000);
 
-        setTimeout(function(){
-            //Start the game!
-            clearScreen();
-            startGame();
-        }, 5000);
     }
 
     function showLevelUpScreen(){
         showScreen();
 
-        var fragment = doc.createDocumentFragment(),
-            levelUp = doc.createElement('div');
+        var fragment = doc.createDocumentFragment();
 
-        levelUp.className = "level_up_screen";
-        levelUp.id = "js-levelup_screen";
-        levelUp.innerHTML = "Level Up!";
-        fragment.appendChild( levelUp );
+        fragment.appendChild( createNewElement( doc, 'div', "js-levelup_screen", 'Level Up!', 'level_up_screen' ) );
+
         titleScreen.appendChild( fragment );
 
         setTimeout(function(){
@@ -175,23 +173,48 @@
     }
 
 
+    function createNewElement( doc = document, element = 'div', js = undefined, content = undefined, ...classNames ){
+        var newElement = doc.createElement( element );
+
+        if( js ){
+            newElement.id = js;
+        }
+
+        for( var i = 0; i < classNames.length; i++ ){
+            newElement.className += classNames[i];
+        }
+
+        if( content ) {
+            newElement.innerHTML = content;
+        }
+
+        return newElement;
+
+    }
+
+
+
     function showGameOverScreen(){
         showScreen();
 
         var fragment = doc.createDocumentFragment(),
-            gameOver = doc.createElement('div');
+            gameOverContainer = createNewElement( doc, undefined , 'js-game_over_screen', undefined, 'game_over_screen' ),
+            resetButton = createNewElement( doc, 'button', 'js-reset_button', 'Play again', 'reset_button' );
 
-        gameOver.className = "game_over_screen";
-        gameOver.id = "js-game_over_screen";
+        resetButton.addEventListener( 'click', resetGame, false );
 
-        gameOver.innerHTML = "Game Over";
-
-        gameOver.innerHTML += "You made it to level " + config.currentLevel;
-        gameOver.innerHTML += "With a score of " + gameScore.total;
+        gameOverContainer.appendChild( createNewElement( doc, 'h1', undefined, 'Game Over', 'game_over_title' ));
+        gameOverContainer.appendChild( createNewElement( doc, 'h2', undefined, "You made it to level " + config.currentLevel, 'game_over_final_level' ) );
+        gameOverContainer.appendChild( createNewElement( doc, 'h2', undefined, "With a score of " + gameScore.total, 'game_over_final_score' ) );
 
 
-        fragment.appendChild( gameOver );
+
+        gameOverContainer.appendChild( resetButton );
+
+
+        fragment.appendChild( gameOverContainer );
         titleScreen.appendChild( fragment );
+
 
     }
 
@@ -397,15 +420,15 @@
     }
 
     function formatScore(value){
-       if( value < 10 ) {
-           return '0000' + value
-       } else if( value < 100 ) {
-           return '000' + value
-       } else if( value < 1000 ) {
-           return '00' + value
-       } else if( value < 10000 ) {
-           return '0' + value
-       } else{ return value }
+        if( value < 10 ) {
+            return '0000' + value
+        } else if( value < 100 ) {
+            return '000' + value
+        } else if( value < 1000 ) {
+            return '00' + value
+        } else if( value < 10000 ) {
+            return '0' + value
+        } else{ return value }
     }
 
     function addScore(value){
@@ -514,6 +537,12 @@
     }
 
 
+    //*****************************************************************************************************************
+    //
+    // Start the game
+    //
+    //*****************************************************************************************************************
+
+    startBtn.addEventListener( 'click', initGame, false );
 
 })();
-
