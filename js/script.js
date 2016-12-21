@@ -6,10 +6,15 @@
         gridContainer = doc.getElementById('js-grid_container'),
         titleScreen = doc.getElementById('js-title_screen'),
 
+        gamePlay = {
+          timesPlayed: 0
+        },
+
         gameTimer = {
             timer: null,
             container: doc.getElementById('js-timer'),
-            totalTime: 10,
+            duration: 10,
+            timeLeft: 0,
             minuteContainer: undefined,
             secondContainer: undefined
         },
@@ -48,15 +53,24 @@
         dealCards( config.deck, config.noOfPairs.total, gridContainer );
 
         //Removes title screen from view
-        screenTransition( showReadyScreen, 'screen-hidden', 2000);
+        if( gamePlay.timesPlayed > 0 ){
+            screenTransition( showReadyScreen, undefined, 0);
+        } else{
+            screenTransition( showReadyScreen, 'screen-hidden', 2000);
+        }
+
     };
 
 
 
-    function resetGame(event){
+    function resetGame (event ){
         event.preventDefault();
-        console.log('reset');
-        initGame(event);
+
+        config.currentLevel = 1;
+        clearDeck( gridContainer );
+        resetScore();
+
+        initGame( event );
 
     }
 
@@ -88,7 +102,7 @@
             len = items.length,
             i = 0;
 
-        for( i; i < len; i++ ) {
+        for( ; i < len; i++ ) {
             items[i].addEventListener('click', cardSelect, false);
         }
 
@@ -105,24 +119,6 @@
     //*****************************************************************************************************************
 
 
-
-    function screenTransition( nextScreen, animateElement = undefined, timeDelay = 0 ){
-        var screen = titleScreen.firstElementChild;
-
-        //animate welcome screen going
-        if( animateElement ) {
-            screen.classList.add(animateElement);
-        }
-
-
-        setTimeout(function(){
-            titleScreen.removeChild(screen);
-            nextScreen();
-        }, timeDelay );
-
-    }
-
-
     function showReadyScreen(){
 
         var fragment = doc.createDocumentFragment(),
@@ -134,25 +130,32 @@
         var screen = titleScreen.firstElementChild,
             readyScreen = doc.getElementById("js-ready_screen");
 
-        setTimeout(function() {
-            readyScreen.innerHTML = count;
-            count--;
-            setTimeout(function() {
-                readyScreen.innerHTML = count;
-                count--;
-                setTimeout(function() {
-                    readyScreen.innerHTML = count;
-                    count--;
-                    setTimeout(function() {
-                        readyScreen.innerHTML = 'Go';
-                    }, 1000);
-                }, 1000);
-            }, 1000);
-        }, 1000);
-
-        screenTransition(startGame, undefined, 5000);
+        animationLoop(count, readyScreen, screenTransition(startGame, undefined, 5000) );
 
     }
+
+
+
+    function animationLoop( loops, content, callback ){
+
+        if( loops > 0 ){
+
+            setTimeout(function() {
+                content.innerHTML = loops;
+                animationLoop(loops -= 1, content, callback );
+            }, 1000);
+
+        } else if ( loops == 0 ){
+            setTimeout(function() {
+                content.innerHTML = 'Go';
+                animationLoop(loops -= 1, content, callback );
+            }, 1000);
+        } else {
+            callback;
+        }
+    }
+
+
 
     function showLevelUpScreen(){
         showScreen();
@@ -163,32 +166,7 @@
 
         titleScreen.appendChild( fragment );
 
-        setTimeout(function(){
-            //Start the game!
-            clearScreen();
-            hideScreen();
-            startNewLevel();
-        }, 3000);
-
-    }
-
-
-    function createNewElement( doc = document, element = 'div', js = undefined, content = undefined, ...classNames ){
-        var newElement = doc.createElement( element );
-
-        if( js ){
-            newElement.id = js;
-        }
-
-        for( var i = 0; i < classNames.length; i++ ){
-            newElement.className += classNames[i];
-        }
-
-        if( content ) {
-            newElement.innerHTML = content;
-        }
-
-        return newElement;
+        screenTransition([clearScreen, hideScreen, startNewLevel], undefined, 3000);
 
     }
 
@@ -218,6 +196,8 @@
 
     }
 
+
+
     function clearScreen(){
         titleScreen.innerHTML = "";
     }
@@ -228,6 +208,54 @@
 
     function showScreen(){
         titleScreen.classList.remove('title_screen-hidden');
+    }
+
+
+
+    function createNewElement( doc = document, element = 'div', js = undefined, content = undefined, ...classNames ){
+        var newElement = doc.createElement( element );
+
+        if( js ){
+            newElement.id = js;
+        }
+
+        for( var i = 0; i < classNames.length; i++ ){
+            newElement.className += classNames[i];
+        }
+
+        if( content ) {
+            newElement.innerHTML = content;
+        }
+
+        return newElement;
+
+    }
+
+
+    function screenTransition( funcs = [], animateElement = undefined, timeDelay = 0 ){
+        var screen = titleScreen.firstElementChild;
+
+        //animate welcome screen going
+        if( animateElement ) {
+            screen.classList.add(animateElement);
+        }
+
+
+        setTimeout(function(){
+            titleScreen.removeChild(screen);
+
+            if( funcs.length > 1 ){
+
+                for( let i = 0; i < funcs.length; i++ ){
+                    funcs[i]();
+                }
+
+            } else{
+                funcs();
+            }
+
+        }, timeDelay );
+
     }
 
 
@@ -254,9 +282,9 @@
     //
     function createCards(deck, noOfPairs){
         var newCard,
-            i;
+            i = 0;
 
-        for ( i = 0; i < noOfPairs; i += 1 ){
+        for ( ; i < noOfPairs; i += 1 ){
             newCard = new Card( config.cardDesign[i], config.cardDesign[i], config.cardDesign[i] );
             deck.push(newCard);
             deck.push(newCard);
@@ -267,7 +295,7 @@
      * Randomize array element order in-place.
      * Using Durstenfeld shuffle algorithm.
      */
-    function shuffleDeck(array) {
+    function shuffleDeck( array ) {
 
         var i = array.length - 1,
             j,
@@ -325,42 +353,47 @@
     //*****************************************************************************************************************
 
     function createTimer(){
-        var fragment = doc.createDocumentFragment(),
-            time = setTimer( gameTimer.totalTime );
 
-        gameTimer.currentMinute = time.minutes;
-        gameTimer.currentSecond = time.seconds;
+        gameTimer.timeLeft = gameTimer.duration;
+        var time = setTimer( gameTimer.timeLeft );
 
-        //Create minutes
-        var minutes = doc.createElement('span');
+        if( gameTimer.container.children.length > 0 ) {
+            gameTimer.container.children[0].innerText = time.minutes;
+            gameTimer.container.children[2].innerText = time.seconds < 10 ? "0" + time.seconds : time.seconds;
 
-        minutes.className = "minutes";
-        minutes.id = "js-minutes";
-        minutes.innerText = gameTimer.currentMinute;
+        } else{
+            //Create minutes
+            var fragment = doc.createDocumentFragment(),
+                minutes = doc.createElement('span');
 
-        //Create divider
-        var divider = doc.createElement('span');
+            minutes.className = "minutes";
+            minutes.id = "js-minutes";
+            minutes.innerText = time.minutes;
 
-        divider.className = "divider";
-        divider.innerText = ":";
+            //Create divider
+            var divider = doc.createElement('span');
 
-        //Create seconds
-        var seconds = doc.createElement('span');
+            divider.className = "divider";
+            divider.innerText = ":";
 
-        seconds.className = "seconds";
-        seconds.id = "js-seconds";
-        seconds.innerText = gameTimer.currentSecond < 10 ? "0" + gameTimer.currentSecond : gameTimer.currentSecond;
+            //Create seconds
+            var seconds = doc.createElement('span');
+
+            seconds.className = "seconds";
+            seconds.id = "js-seconds";
+            seconds.innerText = time.seconds < 10 ? "0" + time.seconds : time.seconds;
 
 
-        fragment.appendChild( minutes );
-        fragment.appendChild( divider );
-        fragment.appendChild( seconds );
+            fragment.appendChild( minutes );
+            fragment.appendChild( divider );
+            fragment.appendChild( seconds );
 
-        gameTimer.container.appendChild( fragment );
+            gameTimer.container.appendChild( fragment );
 
-        //Set global variables with newly created elements to be used later
-        gameTimer.minuteContainer = minutes;
-        gameTimer.secondContainer = seconds;
+            //Set global variables with newly created elements to be used later
+            gameTimer.minuteContainer = minutes;
+            gameTimer.secondContainer = seconds;
+        }
 
     }
 
@@ -377,16 +410,18 @@
 
     }
 
+
     function startTimer(){
         return setInterval( timerCountdown, 1000 );
     }
 
+
     function timerCountdown() {
+0
+        if ( gameTimer.timeLeft > 0 ) {
 
-        if (gameTimer.totalTime > 0) {
-
-            gameTimer.totalTime--;
-            var newTimes = setTimer( gameTimer.totalTime );
+            gameTimer.timeLeft--;
+            var newTimes = setTimer( gameTimer.timeLeft );
 
             gameTimer.minuteContainer.innerText = newTimes.minutes;
             gameTimer.secondContainer.innerText = newTimes.seconds < 10 ? "0" + newTimes.seconds : newTimes.seconds;
@@ -404,7 +439,7 @@
     }
 
     function addTime(value){
-        gameTimer.totalTime = gameTimer.totalTime + value;
+        gameTimer.timeLeft = gameTimer.timeLeft + value;
     }
 
 
@@ -439,6 +474,10 @@
     function removeScore(value){
         gameScore.total = gameScore.total - value;
         setScore();
+    }
+
+    function resetScore(){
+        gameScore.total = 0;
     }
 
 
@@ -493,7 +532,7 @@
             selection[1].removeEventListener('click', cardSelect, false);
 
             addScore(10);
-            addTime(10);
+            addTime(5);
 
 
             if( config.noOfPairs.left === 0 ){
@@ -525,6 +564,8 @@
 
         hideScreen();
         //start timer
+        gridContainer.removeEventListener( 'click', blocker, true );
+        gamePlay.timesPlayed++;
         gameTimer.timer = startTimer();
 
     }
