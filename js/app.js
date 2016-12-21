@@ -129,13 +129,13 @@
                 content.innerHTML = loops;
                 animationLoop(loops -= 1, content, callback);
             }, 1000);
-        } else if (loops == 0) {
+        } else if (loops === 0) {
             setTimeout(function () {
                 content.innerHTML = 'Go';
                 animationLoop(loops -= 1, content, callback);
             }, 1000);
         } else {
-            callback;
+            return callback;
         }
     }
 
@@ -490,7 +490,6 @@
             if (config.noOfPairs.left === 0) {
                 //END LEVEL
                 initNewLevel();
-                console.log("LEVEL COMPLETE");
             } else {
                 gridContainer.removeEventListener('click', blocker, true);
             }

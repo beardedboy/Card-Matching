@@ -145,13 +145,13 @@
                 animationLoop(loops -= 1, content, callback );
             }, 1000);
 
-        } else if ( loops == 0 ){
+        } else if ( loops === 0 ){
             setTimeout(function() {
                 content.innerHTML = 'Go';
                 animationLoop(loops -= 1, content, callback );
             }, 1000);
         } else {
-            callback;
+             return callback;
         }
     }
 
@@ -456,14 +456,14 @@
 
     function formatScore(value){
         if( value < 10 ) {
-            return '0000' + value
+            return '0000' + value;
         } else if( value < 100 ) {
-            return '000' + value
+            return '000' + value;
         } else if( value < 1000 ) {
-            return '00' + value
+            return '00' + value;
         } else if( value < 10000 ) {
-            return '0' + value
-        } else{ return value }
+            return '0' + value;
+        } else{ return value; }
     }
 
     function addScore(value){
@@ -538,7 +538,6 @@
             if( config.noOfPairs.left === 0 ){
                 //END LEVEL
                 initNewLevel();
-                console.log("LEVEL COMPLETE");
             } else{
                 gridContainer.removeEventListener( 'click', blocker, true );
             }

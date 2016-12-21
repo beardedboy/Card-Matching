@@ -25,9 +25,15 @@ module.exports = function(grunt) {
                     'js/app.min.js': ['js/app.js']
                 }
             }
+        },
+        jshint: {
+            options: {
+                esversion: 6
+            },
+            src: ['js/script.js']
         }
     });
 
-    grunt.registerTask('default', ['babel', 'uglify']);
+    grunt.registerTask('default', ['jshint', 'babel', 'uglify']);
     
 };
