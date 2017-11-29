@@ -110,48 +110,49 @@
         welcomeScreen.classList.add('welcome_screen-hidden');
         //clearScreen();
         setTimeout(function(){
-            showReadyScreen();
-            titleScreen.removeChild(welcomeScreen);
+            showReadyScreen(3, true, null, function(){
+                titleScreen.removeChild(welcomeScreen);
+                clearScreen();
+                startGame();
+            });
         }, 2000);
     }
 
-    function showReadyScreen(){
+    function showReadyScreen(count, start, el, callback){
 
+        var readyScreen = el;
         //Add ready screen
-        var fragment = doc.createDocumentFragment(),
-            ready = doc.createElement('div'),
-            count = 3;
+        if( start ){
+            var fragment = doc.createDocumentFragment(),
+                ready = doc.createElement('div');
 
-        ready.className = "ready_screen";
-        ready.id = "js-ready_screen";
-        fragment.appendChild( ready );
-        titleScreen.appendChild( fragment );
+            ready.className = "ready_screen";
+            ready.id = "js-ready_screen";
+            fragment.appendChild( ready );
+            titleScreen.appendChild( fragment );
 
-        var readyScreen = doc.getElementById("js-ready_screen");
+            readyScreen = doc.getElementById("js-ready_screen");
 
-        setTimeout(function() {
-            readyScreen.innerHTML = count;
-            count--;
-            setTimeout(function() {
-                readyScreen.innerHTML = count;
-                count--;
-                setTimeout(function() {
-                    readyScreen.innerHTML = count;
-                    count--;
-                    setTimeout(function() {
-                        readyScreen.innerHTML = 'Go';
-                    }, 1000);
-                }, 1000);
-            }, 1000);
-        }, 1000);
-
+        }
 
         setTimeout(function(){
-            //Start the game!
-            clearScreen();
-            startGame();
-        }, 5000);
+
+            if( count > 0 ){
+                readyScreen.innerHTML = count;
+                showReadyScreen(count - 1, false, readyScreen, callback);
+            } else if( count === 0 ){
+                readyScreen.innerHTML = 'Go';
+                showReadyScreen(count - 1, false, readyScreen, callback);
+            } else{
+                callback();
+            }
+
+        }, 1000);
+
     }
+
+
+
 
     function showLevelUpScreen(){
         showScreen();
