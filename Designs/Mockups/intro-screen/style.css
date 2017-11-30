@@ -1,0 +1,105 @@
+html, body{
+	height: 100%;
+}
+
+body{
+	position: relative;
+	margin: 0;
+	background-color: rgb(0, 16, 33);
+	overflow: hidden;
+}
+
+.sea{
+	position: absolute;
+	bottom: -90%;
+	width: 100%;
+	height: 100%;
+	background-color: rgb(27,227,255);
+}
+
+.frontwave,
+.middlewave, 
+.backwave {
+	position: absolute;
+	width: 7600px;
+	height: 100%;
+	top: -3rem;
+}
+
+
+.frontwave{
+	background: url(../../svg/frontwave.svg) repeat-x;
+	z-index: 4;
+	animation: frontwave 50s cubic-bezier( 0.36, 0.45, 0.63, 0.53 ) infinite, frontswell 7s infinite;
+}
+
+.middlewave{
+	background: url(../../svg/middlewave.svg) repeat-x;
+	width: 15200px;
+	z-index: 3;
+	animation: middlewave 40s cubic-bezier( 0.36, 0.45, 0.63, 0.53 ) infinite, middleswell 10s infinite;
+
+}
+
+.backwave{
+	background: url(../../svg/backwave.svg) repeat-x;
+	z-index: 2;
+	animation: backwave 40s cubic-bezier( 0.36, 0.45, 0.63, 0.53 ) infinite, backswell 10s infinite;
+
+}
+
+@keyframes frontswell {
+	0%, 100%{
+		transform: translate3d(0,0,0);
+	}
+	50%{
+		transform: translate3d(0,10px,0);
+	}
+}
+
+@keyframes middleswell {
+	0%, 100%{
+		transform: translate3d(0,0,0);
+	}
+	50%{
+		transform: translate3d(0,-5px,0);
+	}
+}
+
+@keyframes backswell {
+	0%, 100%{
+		transform: translate3d(0,0,0);
+	}
+	50%{
+		transform: translate3d(0,-5px,0);
+	}
+}
+
+
+@keyframes frontwave {
+  0% {
+    margin-left: 0;
+  }
+  100% {
+    margin-left: -3800px;
+  }
+}
+
+@keyframes middlewave {
+  0% {
+    margin-left: -7600px;
+  }
+  100% {
+    margin-left: 0;
+  }
+}
+
+
+@keyframes backwave {
+  0% {
+    margin-left: 0;
+  }
+  100% {
+    margin-left: -3800px;
+  }
+}
